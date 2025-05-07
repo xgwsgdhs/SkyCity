@@ -43,14 +43,15 @@ export default {
     let path = []
 
     const getCellIndex = (event) => {
-      const rect = event.target.getBoundingClientRect()
-      const x = event.clientX - rect.left
-      const y = event.clientY - rect.top
+      const container = event.currentTarget.getBoundingClientRect() // 用整个 game-map
+      const x = event.clientX - container.left
+      const y = event.clientY - container.top
       const col = Math.floor(x / cellSize)
       const row = Math.floor(y / cellSize)
       const index = row * columns + col
       return (index >= 0 && index < cells.value.length) ? index : -1
     }
+
 
     const startDrawing = (event) => {
       if (props.currentTool === 'roadBuilder') {
@@ -104,9 +105,9 @@ export default {
 <style scoped>
 .game-map {
   display: grid;
-  gap: 2px;
+  gap: 0;
   justify-content: center;
-  border: 2px solid #666;
+  border: none;
   background-color: #ccc;
   user-select: none;
 }
