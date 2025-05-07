@@ -4,17 +4,24 @@
     <p>欢迎，{{ nickname }}！</p>
     <p>难度：{{ levelText }}</p>
 
-    <div class="game-area">
-      <!-- 以后这里放地图、工具栏、计分器 -->
-      <p>（这里是游戏地图区域）</p>
+    <div class="game-container">
+      <!-- 地图区域 -->
+      <div class="game-map">
+        <p>（这里是游戏地图区域）</p>
+      </div>
+
+      <!-- 工具栏 -->
+      <ToolBar />
     </div>
   </div>
 </template>
 
 <script>
 import { ref, onMounted } from 'vue'
+import ToolBar from '../components/Game/ToolBar.vue'
 
 export default {
+  components: { ToolBar },
   setup() {
     const nickname = ref('')
     const level = ref('')
@@ -41,12 +48,22 @@ export default {
 <style scoped>
 .game-page {
   text-align: center;
-  padding: 50px;
+  padding: 20px;
 }
 
-.game-area {
+.game-container {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
   margin-top: 30px;
+}
+
+.game-map {
+  width: 600px;
+  height: 600px;
   border: 2px dashed #999;
-  padding: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 </style>
