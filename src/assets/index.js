@@ -91,9 +91,10 @@ export const roads = {
 import eraser from './images/tools/eraser.png'
 import navigator from './images/tools/navigator.png'
 import rebirth from './images/tools/rebirth.png'
-
+import roadBuilder from './images/tools/roadpaver.png'
 export const tools = {
     eraser,
     navigator,
-    rebirth
+    rebirth,
+    roadBuilder
 }

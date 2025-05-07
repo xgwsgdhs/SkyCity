@@ -3,26 +3,25 @@
     <img :src="tools.eraser" alt="橡皮" @click="selectTool('eraser')">
     <img :src="tools.navigator" alt="导航器" @click="selectTool('navigator')">
     <img :src="tools.rebirth" alt="重生门" @click="selectTool('rebirth')">
+    <img :src="tools.roadBuilder" alt="铺路机" @click="selectTool('roadBuilder')">
   </div>
 </template>
 
-<script>
+<script setup>
 import { tools } from '@/assets/index.js'
 import { ref } from 'vue'
 
-export default {
-  setup() {
-    const selectedTool = ref('')
+const emit = defineEmits(['tool-selected'])//传递到父组件
 
-    const selectTool = (toolName) => {
-      selectedTool.value = toolName
-      console.log('已选择工具：', toolName)
-    }
+const selectedTool = ref('')
 
-    return { tools, selectTool }
-  }
+const selectTool = (toolName) => {
+  selectedTool.value = toolName
+  emit('tool-selected', toolName)
+  console.log('已选择工具：', toolName)
 }
 </script>
+
 
 <style scoped>
 .tool-bar {
