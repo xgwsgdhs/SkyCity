@@ -22,11 +22,13 @@
 
 <script>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 export default {
   setup() {
     const showModal = ref(false)
     const nickname = ref('')
+    const router = useRouter()
 
     const closeModal = () => {
       showModal.value = false
@@ -35,8 +37,10 @@ export default {
     const confirmNickname = () => {
       if (nickname.value.trim()) {
         console.log('昵称确认：', nickname.value)
-        // 后面加跳转逻辑
-        showModal.value = false
+        // 存储昵称
+        localStorage.setItem('nickname', nickname.value)
+        // 跳转到关卡选择页面
+        router.push('/level')
       }
     }
 
