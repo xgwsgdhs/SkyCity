@@ -19,8 +19,8 @@ export default {
     const selectLevel = (level) => {
       console.log('选择的难度：', level)
       localStorage.setItem('level', level)
-      // 未来跳转到游戏页面
-      // router.push('/game')
+      // 跳转到游戏页面
+      router.push('/game')
     }
 
     return { selectLevel }
