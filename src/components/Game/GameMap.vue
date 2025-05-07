@@ -12,12 +12,7 @@
         v-for="(cell, index) in cells"
         :key="index"
         class="map-cell"
-        :style="{
-        width: `${cellSize}px`,
-        height: `${cellSize}px`,
-        backgroundImage: cell ? `url(${cell})` : 'none',
-        backgroundSize: 'cover'
-      }"
+        :style="getCellStyle(index)"
         @mousedown="startDrawing(index)"
         @mouseenter="trackDrawing(index)"
     >
@@ -42,11 +37,15 @@ export default {
     let drawing = false
     let path = []
 
+    // 虚拟预览的路径（不改变cells）
+    let previewPath = ref([])
+
     // 鼠标按下：开始记录路径，并记录起始格子
     const startDrawing = (index) => {
       if (props.currentTool === 'roadBuilder') {
         drawing = true
         path = [index]  // 把按下时的格子放进去
+        previewPath.value = [index]
         console.log('开始绘制，起始格子：', index)
       }
     }
@@ -56,6 +55,7 @@ export default {
       if (drawing && props.currentTool === 'roadBuilder') {
         if (!path.includes(index)) {
           path.push(index)
+          previewPath.value = [...path] // 更新预览路径
         }
       }
     }
@@ -70,12 +70,37 @@ export default {
       }
       drawing = false
       path = []
+      previewPath.value = []
     }
 
     // 鼠标移出地图：取消绘制
     const cancelDrawing = () => {
       drawing = false
       path = []
+      previewPath.value = []
+    }
+
+    // 给每个格子动态设置样式
+    const getCellStyle = (index) => {
+      const style = {
+        width: `${cellSize}px`,
+        height: `${cellSize}px`,
+        backgroundSize: 'cover'
+      }
+
+      if (cells.value[index]) {
+        // 已经铺设好的道路
+        style.backgroundImage = `url(${cells.value[index]})`
+        style.opacity = '1'
+      } else if (previewPath.value.includes(index)) {
+        // 虚拟预览中的格子
+        style.backgroundImage = `url(${roads.cross})`
+        style.opacity = '0.5'  // 半透明
+      } else {
+        style.backgroundImage = 'none'
+      }
+
+      return style
     }
 
     return {
@@ -86,7 +111,8 @@ export default {
       startDrawing,
       trackDrawing,
       endDrawing,
-      cancelDrawing
+      cancelDrawing,
+      getCellStyle
     }
   }
 }
