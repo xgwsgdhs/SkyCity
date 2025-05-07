@@ -37,6 +37,12 @@ export default {
     const cellSize = 50 // 每格尺寸（px）
     const cells = ref(Array(columns * rows).fill(null))
 
+    // 状态码：[content, top, right, bottom, left, overlay]
+    // content: 0=无, 1=道路, 2=房屋1, 3=房屋2, 4=房屋3, 5=重生门
+    const cellStates = ref(
+        Array.from({ length: columns * rows }, () => [0, 0, 0, 0, 0, 0])
+    )
+    console.log(cellStates.value[1])//调试总状态码控制器
     const coins = ref(1000)  // 初始金币
 
     let drawing = false
@@ -61,8 +67,10 @@ export default {
     const trackDrawing = (index) => {
       if (drawing && props.currentTool === 'roadBuilder') {
         if (!path.includes(index)) {
+          console.log(index)
           path.push(index)
           previewPath.value = [...path] // 更新预览路径
+          console.log(previewPath.value)
         }
       }
     }
