@@ -111,8 +111,8 @@ export default {
         style.opacity = '1'
       } else if (previewPath.value.includes(index)) {
         // 虚拟预览中的格子
-        style.backgroundImage = `url(${roads.cross})`
-        style.opacity = '0.5'  // 半透明
+        style.backgroundImage = 'gray'
+        style.opacity = '0'  // 半透明
       } else {
         style.backgroundImage = 'none'
       }
