@@ -1,23 +1,26 @@
 <template>
-  <div
-      class="game-map"
-      :style="{
-      gridTemplateColumns: `repeat(${columns}, ${cellSize}px)`,
-      gridTemplateRows: `repeat(${rows}, ${cellSize}px)`
-    }"
-      @mouseup="endDrawing"
-      @mouseleave="cancelDrawing"
-  >
+  <div>
     <div
-        v-for="(cell, index) in cells"
-        :key="index"
-        class="map-cell"
-        :style="getCellStyle(index)"
-        @mousedown="startDrawing(index)"
-        @mouseenter="trackDrawing(index)"
+        class="game-map"
+        :style="{
+        gridTemplateColumns: `repeat(${columns}, ${cellSize}px)`,
+        gridTemplateRows: `repeat(${rows}, ${cellSize}px)`
+      }"
+        @mouseup="endDrawing"
+        @mouseleave="cancelDrawing"
     >
-      {{ index }}
+      <div
+          v-for="(cell, index) in cells"
+          :key="index"
+          class="map-cell"
+          :style="getCellStyle(index)"
+          @mousedown="startDrawing(index)"
+          @mouseenter="trackDrawing(index)"
+      >
+        {{ index }}
+      </div>
     </div>
+    <p>当前金币：{{ coins }}</p>
   </div>
 </template>
 
@@ -34,11 +37,15 @@ export default {
     const cellSize = 50 // 每格尺寸（px）
     const cells = ref(Array(columns * rows).fill(null))
 
+    const coins = ref(1000)  // 初始金币
+
     let drawing = false
     let path = []
 
     // 虚拟预览的路径（不改变cells）
     let previewPath = ref([])
+
+    const costPerTile = 50  // 每格50金币
 
     // 鼠标按下：开始记录路径，并记录起始格子
     const startDrawing = (index) => {
@@ -63,11 +70,21 @@ export default {
     // 鼠标松开：正式铺路
     const endDrawing = () => {
       if (drawing && props.currentTool === 'roadBuilder') {
-        console.log('铺设道路，格子：', path)
-        path.forEach(index => {
-          cells.value[index] = roads.cross  // 暂时统一放 cross 路图片
-        })
+        const totalCost = path.length * costPerTile
+        console.log('需要金币：', totalCost, '当前金币：', coins.value)
+
+        if (coins.value >= totalCost) {
+          path.forEach(index => {
+            cells.value[index] = roads.cross
+          })
+          coins.value -= totalCost
+          console.log('铺设成功，剩余金币：', coins.value)
+        } else {
+          console.log('金币不足，铺设失败')
+          // 不做任何修改
+        }
       }
+
       drawing = false
       path = []
       previewPath.value = []
@@ -108,6 +125,7 @@ export default {
       rows,
       cellSize,
       cells,
+      coins,
       startDrawing,
       trackDrawing,
       endDrawing,
