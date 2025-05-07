@@ -10,7 +10,7 @@
         @mouseleave="cancelDrawing"
     >
       <div
-          v-for="(cell, index) in cells"
+          v-for="(index) in cells"
           :key="index"
           class="map-cell"
           :style="getCellStyle(index)"
