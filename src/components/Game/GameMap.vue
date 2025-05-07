@@ -5,10 +5,8 @@
       gridTemplateColumns: `repeat(${columns}, ${cellSize}px)`,
       gridTemplateRows: `repeat(${rows}, ${cellSize}px)`
     }"
-      @mousedown="startDrawing"
       @mouseup="endDrawing"
       @mouseleave="cancelDrawing"
-      @mousemove="trackDrawing"
   >
     <div
         v-for="(cell, index) in cells"
@@ -20,6 +18,8 @@
         backgroundImage: cell ? `url(${cell})` : 'none',
         backgroundSize: 'cover'
       }"
+        @mousedown="startDrawing(index)"
+        @mouseenter="trackDrawing(index)"
     >
       {{ index }}
     </div>
@@ -42,52 +42,37 @@ export default {
     let drawing = false
     let path = []
 
-    const gap = 2   // grid 的 gap
-    const border = 2  // map-cell 的 border
-
-    // 每格真实的尺寸
-    const realCellSize = cellSize + gap + border * 2
-
-    const getCellIndex = (event) => {
-      const rect = event.target.getBoundingClientRect()
-      const x = event.clientX - rect.left
-      const y = event.clientY - rect.top
-      const col = Math.floor(x / realCellSize)
-      const row = Math.floor(y / realCellSize)
-      const index = row * columns + col
-      return (index >= 0 && index < cells.value.length) ? index : -1
-    }
-
-    const startDrawing = (event) => {
+    // 鼠标按下：开始记录路径，并记录起始格子
+    const startDrawing = (index) => {
       if (props.currentTool === 'roadBuilder') {
         drawing = true
-        path = []
-        const index = getCellIndex(event)
-        if (index !== -1) {
-          path.push(index)
-        }
+        path = [index]  // 把按下时的格子放进去
+        console.log('开始绘制，起始格子：', index)
       }
     }
 
-    const trackDrawing = (event) => {
+    // 鼠标经过：继续记录路径
+    const trackDrawing = (index) => {
       if (drawing && props.currentTool === 'roadBuilder') {
-        const index = getCellIndex(event)
-        if (index !== -1 && !path.includes(index)) {
+        if (!path.includes(index)) {
           path.push(index)
         }
       }
     }
 
+    // 鼠标松开：正式铺路
     const endDrawing = () => {
       if (drawing && props.currentTool === 'roadBuilder') {
+        console.log('铺设道路，格子：', path)
         path.forEach(index => {
-          cells.value[index] = roads.cross  // 先用十字路口的图片，后面再换动态样式
+          cells.value[index] = roads.cross  // 暂时统一放 cross 路图片
         })
       }
       drawing = false
       path = []
     }
 
+    // 鼠标移出地图：取消绘制
     const cancelDrawing = () => {
       drawing = false
       path = []
