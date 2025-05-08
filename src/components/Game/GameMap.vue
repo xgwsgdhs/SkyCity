@@ -83,7 +83,7 @@ export default {
       if (this.draggingPreview && this.coins >= 50*this.previewCells.length) {
         // 确认铺设的道路，且金币足够
         this.previewCells.forEach(cell => {
-          this.placeRoad(cell.row, cell.col,true);
+          this.placeRoad(cell.row, cell.col);
           this.changeNeighbor(cell.row, cell.col)
         });
       }
@@ -116,14 +116,13 @@ export default {
     },
 
     // 绘制路面
-    placeRoad(rowIndex, colIndex,useCoin) {
+    placeRoad(rowIndex, colIndex) {
       // console.log(this.map[rowIndex][colIndex])
       const style = this.changeStyle(rowIndex,colIndex)
       if (this.map[rowIndex][colIndex] === null && this.coins >= 50) {
         this.map[rowIndex][colIndex] = style; // 假设是横向路面
-        if (useCoin){
-          this.coins -= 50; // 每铺设一个格子，消耗50金币
-        }
+        this.coins -= 50; // 每铺设一个格子，消耗50金币
+
       }
     },
     // 获取对应的道路图片 传入图片名称即可
