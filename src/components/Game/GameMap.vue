@@ -1,169 +1,119 @@
 <template>
-  <div>
-    <div
-        class="game-map"
-        :style="{
-        gridTemplateColumns: `repeat(${columns}, ${cellSize}px)`,
-        gridTemplateRows: `repeat(${rows}, ${cellSize}px)`
-      }"
-        @mouseup="endDrawing"
-        @mouseleave="cancelDrawing"
-    >
+  <div class="game-container">
+    <!-- 游戏地图 -->
+    <div class="game-map" @mousedown="startDrawing" @mouseup="stopDrawing" @mousemove="drawing">
       <div
-          v-for="(cell, index) in cells"
-          :key="index"
-          class="map-cell"
-          :style="getCellStyle(index)"
-          @mousedown="startDrawing(index)"
-          @mouseenter="trackDrawing(index)"
+          v-for="(row, rowIndex) in map"
+          :key="'row-' + rowIndex"
+          class="game-row"
       >
-        {{ index }}
+        <div
+            v-for="(cell, colIndex) in row"
+            :key="'cell-' + colIndex"
+            class="game-cell"
+            @click="changeNeighborColors(rowIndex, colIndex)"
+        >
+          列：{{ rowIndex }}
+          行：{{ colIndex }}
+        </div>
       </div>
     </div>
-    <p>当前金币：{{ coins }}</p>
+
+    <!-- 时间和金币显示 -->
+    <div class="info-panel">
+      <div class="coins">
+        <span>金币：{{ coins }}</span>
+      </div>
+      <div class="timer">
+        <span>时间：{{ timer }}</span>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import { ref } from 'vue'
-import { roads} from '@/assets/index.js'
-
 export default {
-  props: ['currentTool'],
-  setup(props) {
-    // 地图配置（可以自由修改）
-    const columns = 20  // 列数
-    const rows = 15     // 行数
-    const cellSize = 50 // 每格尺寸（px）
-    const cells = ref(Array(columns * rows).fill(null))
-
-    // 状态码：[content, top, right, bottom, left, overlay]
-    // content: 0=无, 1=道路, 2=房屋1, 3=房屋2, 4=房屋3, 5=重生门
-    const cellStates = ref(
-        Array.from({ length: columns * rows }, () => [0, 0, 0, 0, 0, 0])
-    )
-    console.log(cellStates.value[1])//调试总状态码控制器
-    const coins = ref(1000)  // 初始金币
-
-    let drawing = false
-    let path = []
-
-    // 虚拟预览的路径（不改变cells）
-    let previewPath = ref([])
-
-    const costPerTile = 50  // 每格50金币
-
-    // 鼠标按下：开始记录路径，并记录起始格子
-    const startDrawing = (index) => {
-      if (props.currentTool === 'roadBuilder') {
-        drawing = true
-        path = [index]  // 把按下时的格子放进去
-        previewPath.value = [index]
-        console.log('开始绘制，起始格子：', index)
-      }
-    }
-
-    // 鼠标经过：继续记录路径
-    const trackDrawing = (index) => {
-      if (drawing && props.currentTool === 'roadBuilder') {
-        if (!path.includes(index)) {
-          console.log(index)
-          path.push(index)
-          previewPath.value = [...path] // 更新预览路径
-          console.log(previewPath.value)
-        }
-      }
-    }
-
-    // 鼠标松开：正式铺路
-    const endDrawing = () => {
-      if (drawing && props.currentTool === 'roadBuilder') {
-        const totalCost = path.length * costPerTile
-        console.log('需要金币：', totalCost, '当前金币：', coins.value)
-
-        if (coins.value >= totalCost) {
-          path.forEach(index => {
-            cells.value[index] = roads.cross
-          })
-          coins.value -= totalCost
-          console.log('铺设成功，剩余金币：', coins.value)
-        } else {
-          console.log('金币不足，铺设失败')
-          // 不做任何修改
-        }
-      }
-
-      drawing = false
-      path = []
-      previewPath.value = []
-    }
-
-    // 鼠标移出地图：取消绘制
-    const cancelDrawing = () => {
-      drawing = false
-      path = []
-      previewPath.value = []
-    }
-
-    // 给每个格子动态设置样式
-    const getCellStyle = (index) => {
-      const style = {
-        width: `${cellSize}px`,
-        height: `${cellSize}px`,
-        backgroundSize: 'cover'
-      }
-
-      if (cells.value[index]) {
-        // 已经铺设好的道路
-        style.backgroundImage = `url(${cells.value[index]})`
-        style.opacity = '1'
-      } else if (previewPath.value.includes(index)) {
-        // 虚拟预览中的格子
-        style.backgroundImage = 'gray'
-        style.opacity = '0'  // 半透明
-      } else {
-        style.backgroundImage = 'none'
-      }
-
-      return style
-    }
-
+  data() {
     return {
-      columns,
-      rows,
-      cellSize,
-      cells,
-      coins,
-      startDrawing,
-      trackDrawing,
-      endDrawing,
-      cancelDrawing,
-      getCellStyle
-    }
-  }
-}
+      // 初始化一个20行15列的二维数组
+      map: Array.from({ length: 20 }, () => Array(15).fill(null)),
+      coins: 3000, // 初始金币数
+      timer: 100,  // 初始时间
+      selectedTool: null, // 当前选择的工具
+      isDrawing: false, // 是否正在绘制路面
+      drawingStart: null, // 绘制起点
+    };
+  },
+  methods: {
+    // 改变点击格子上下左右相邻格子的颜色
+    changeNeighborColors(rowIndex, colIndex) {
+      // 获取四个方向的格子索引
+      const neighbors = [
+        { row: rowIndex - 1, col: colIndex }, // 上
+        { row: rowIndex + 1, col: colIndex }, // 下
+        { row: rowIndex, col: colIndex - 1 }, // 左
+        { row: rowIndex, col: colIndex + 1 }, // 右
+      ];
+
+      // 临时改变颜色
+      neighbors.forEach((neighbor) => {
+        const { row, col } = neighbor;
+        if (row >= 0 && row < 20 && col >= 0 && col < 15) {
+          // 找到有效的格子，改变颜色
+          const cell = this.$el.querySelectorAll('.game-row')[row].children[col];
+          cell.style.backgroundColor = 'yellow';
+        }
+      });
+
+      // 1秒后恢复原颜色
+      setTimeout(() => {
+        neighbors.forEach((neighbor) => {
+          const { row, col } = neighbor;
+          if (row >= 0 && row < 20 && col >= 0 && col < 15) {
+            // 恢复颜色
+            const cell = this.$el.querySelectorAll('.game-row')[row].children[col];
+            cell.style.backgroundColor = '#f0f0f0'; // 恢复原背景色
+          }
+        });
+      }, 1000);
+    },
+  },
+};
+
 </script>
 
 <style scoped>
+.game-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 20px;
+}
+
 .game-map {
   display: grid;
-  gap: 2px;
-  justify-content: center;
-  border: 2px solid #666;
-  background-color: #ccc;
-  user-select: none;
+  grid-template-columns: repeat(20, 50px); /* 20列 */
+  grid-template-rows: repeat(15, 50px);    /* 15行 */
+  gap: 2px;  /* 格子之间的间距 */
 }
 
-.map-cell {
-  background-color: #eee;
-  border: 1px solid #999;
+.game-cell {
+  width: 50px;
+  height: 50px;
+  background-color: #f0f0f0;
+  border: 1px solid #ddd;
+}
+
+.info-panel {
+  margin-top: 20px;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
+  justify-content: space-around;
+  width: 100%;
 }
 
-.map-cell:hover {
-  background-color: #ddd;
+.coins,
+.timer {
+  font-size: 18px;
+  font-weight: bold;
 }
 </style>
