@@ -219,7 +219,7 @@ export default {
         const { row, col } = neighbor;
         // console.log(this.roadTypes.includes(this.map[row][col]))判断邻格有没有路
         if (this.roadTypes.includes(this.map[row][col])) {
-          this.map[row][col] = this.changeStyle(row, col);
+          this.map[row][col] = this.changeStyle(row, col);//返回的是格子的名称
         }
       });
     }
