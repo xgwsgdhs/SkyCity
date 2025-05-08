@@ -1,7 +1,7 @@
 <template>
   <div class="game-container">
     <!-- 游戏地图 -->
-    <div class="game-map" @mouseleave="stopDrag">
+    <div class="game-map" @mouseleave="endDrag">
       <div
           v-for="(row, rowIndex) in map"
           :key="'row-' + rowIndex"
@@ -17,12 +17,13 @@
             @mouseenter="dragMove(rowIndex, colIndex)"
             :style="{
             backgroundImage: 'url(' + getRoadImage(cell) + ')',
-            backgroundSize: 'cover'
+            backgroundSize: 'cover',
+            backgroundColor: draggingPreview && isPreviewCell(rowIndex, colIndex) ? '#d3d3d3' : '' // 预览的灰色背景
           }"
             draggable="false"
         >
-<!--          列：{{ rowIndex }}-->
-<!--          行：{{ colIndex }}-->
+          列：{{ rowIndex }}
+          行：{{ colIndex }}
         </div>
       </div>
     </div>
@@ -50,6 +51,8 @@ export default {
       timer: 100,  // 初始时间
       dragging: false, // 判断是否在拖拽
       toolType: 'roadBuilder', // 当前使用的工具
+      draggingPreview: false, // 判断是否正在拖动铺设预览
+      previewCells: [], // 存储正在拖拽的路径格子
     };
   },
   methods: {
@@ -58,31 +61,57 @@ export default {
       console.log(rowIndex,colIndex)
       if (this.toolType === 'roadBuilder' && this.coins >= 50) {
         this.dragging = true;
-        this.placeRoad(rowIndex, colIndex);
+        this.previewCells = [{ row: rowIndex, col: colIndex }];
+        this.draggingPreview = true;
       }
     },
 
-    // 停止拖拽
-    stopDrag() {
+    // 超出窗口
+    endDrag() {
       this.dragging = false;
+      this.draggingPreview = false;
+    },
+
+    stopDrag() {
+      if (this.draggingPreview && this.coins >= 50) {
+        // 确认铺设的道路，且金币足够
+        this.previewCells.forEach(cell => {
+          this.placeRoad(cell.row, cell.col);
+        });
+      }
+      this.dragging = false;
+      this.draggingPreview = false;
+      this.previewCells = [];
     },
 
     // 移动时绘制
     dragMove(rowIndex, colIndex) {
       if (this.dragging) {
-        console.log(rowIndex, colIndex);
-        if (rowIndex >= 0 && rowIndex < 20 && colIndex >= 0 && colIndex < 15) {
-          this.placeRoad(rowIndex, colIndex);
+        const newPreviewCells = [...this.previewCells];
+        const lastPreviewCell = newPreviewCells[newPreviewCells.length - 1];
+
+        // 判断是否继续拖动路径
+        if (this.canAddToPreview(lastPreviewCell, rowIndex, colIndex)) {
+          newPreviewCells.push({ row: rowIndex, col: colIndex });
+          this.previewCells = newPreviewCells;
         }
       }
     },
 
+    canAddToPreview(lastCell, rowIndex, colIndex) {
+      // 检查是否可以继续添加格子到路径中（这里的逻辑可以根据实际要求调整）
+      return !this.previewCells.some(cell => cell.row === rowIndex && cell.col === colIndex);
+    },
+
+    isPreviewCell(rowIndex, colIndex) {
+      return this.previewCells.some(cell => cell.row === rowIndex && cell.col === colIndex);
+    },
+
     // 绘制路面
     placeRoad(rowIndex, colIndex) {
-      console.log(this.map[rowIndex][colIndex])
+      // console.log(this.map[rowIndex][colIndex])
       if (this.map[rowIndex][colIndex] === null && this.coins >= 50) {
-        // 在地图上铺设路面
-        this.map[rowIndex][colIndex] = 'cross';
+        this.map[rowIndex][colIndex] = 'horizontal'; // 假设是横向路面
         this.coins -= 50; // 每铺设一个格子，消耗50金币
       }
     },
@@ -150,10 +179,6 @@ export default {
   border: 1px solid #ddd;
   cursor: pointer;
   user-select: none; /* 禁止选择文本 */
-}
-
-.game-cell.road {
-  background-color: #8b4513; /* 模拟铺设的路面颜色 */
 }
 
 .info-panel {
