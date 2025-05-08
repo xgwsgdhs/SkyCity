@@ -53,6 +53,12 @@ export default {
       toolType: 'roadBuilder', // 当前使用的工具
       draggingPreview: false, // 判断是否正在拖动铺设预览
       previewCells: [], // 存储正在拖拽的路径格子
+      roadTypes: [
+        'bottomEnd', 'cross', 'end', 'horizontal', 'Lbend',
+        'LbendHorizontalReverse', 'LbendMirror', 'LbendVerticalReverse',
+        'leftEnd', 'rightEnd', 'Tjunction', 'TjunctionLeft',
+        'TjunctionReverse', 'TjunctionRight', 'topEnd', 'vertical'
+      ],
     };
   },
   methods: {
@@ -73,7 +79,7 @@ export default {
     },
 
     stopDrag() {
-      if (this.draggingPreview && this.coins >= 50) {
+      if (this.draggingPreview && this.coins >= 50*this.previewCells.length) {
         // 确认铺设的道路，且金币足够
         this.previewCells.forEach(cell => {
           this.placeRoad(cell.row, cell.col);
