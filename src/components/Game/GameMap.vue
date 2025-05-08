@@ -11,7 +11,7 @@
             v-for="(cell, colIndex) in row"
             :key="'cell-' + colIndex"
             class="game-cell"
-            @click="changeNeighborColors(rowIndex, colIndex)"
+            @click="changeStyle(rowIndex, colIndex)"
             @mousedown="startDrag(rowIndex, colIndex)"
             @mouseup="stopDrag"
             @mouseenter="dragMove(rowIndex, colIndex)"
@@ -82,7 +82,8 @@ export default {
       if (this.draggingPreview && this.coins >= 50*this.previewCells.length) {
         // 确认铺设的道路，且金币足够
         this.previewCells.forEach(cell => {
-          this.placeRoad(cell.row, cell.col);
+          this.placeRoad(cell.row, cell.col,true);
+          this.changeNeighbor(cell.row, cell.col)
         });
       }
       this.dragging = false;
@@ -114,11 +115,14 @@ export default {
     },
 
     // 绘制路面
-    placeRoad(rowIndex, colIndex) {
+    placeRoad(rowIndex, colIndex,useCoin) {
       // console.log(this.map[rowIndex][colIndex])
+      const style = this.changeStyle(rowIndex,colIndex)
       if (this.map[rowIndex][colIndex] === null && this.coins >= 50) {
-        this.map[rowIndex][colIndex] = 'horizontal'; // 假设是横向路面
-        this.coins -= 50; // 每铺设一个格子，消耗50金币
+        this.map[rowIndex][colIndex] = style; // 假设是横向路面
+        if (useCoin){
+          this.coins -= 50; // 每铺设一个格子，消耗50金币
+        }
       }
     },
     // 获取对应的道路图片 传入图片名称即可
@@ -127,7 +131,7 @@ export default {
     },
 
     // 改变点击格子上下左右相邻格子的颜色
-    changeNeighborColors(rowIndex, colIndex) {//传入当前格子位置即可
+    changeStyle(rowIndex, colIndex) {//传入当前格子位置即可
       // 获取四个方向的格子索引
       const neighbors = [
         { row: rowIndex - 1, col: colIndex }, // 上
@@ -149,7 +153,7 @@ export default {
         }
       });
 
-      console.log(resultList);
+      // console.log(resultList);
 
       let trueCount = resultList.filter(value => value === true).length;
 
@@ -158,9 +162,9 @@ export default {
       } else if (trueCount === 1) {//[左, 右, 上, 下, ]状态
 
         if (resultList[0]===true){
-          return "leftEnd"
-        }else if (resultList[1]===true){
           return "rightEnd"
+        }else if (resultList[1]===true){
+          return "leftEnd"
         }else if (resultList[2]===true){
           return "bottomEnd"
         }else if (resultList[3]===true){
@@ -176,7 +180,7 @@ export default {
         }else if (resultList[2]===true && resultList[3]===true){
           return "vertical"
         }else if (resultList[0]===true && resultList[2]===true){
-          return "TjunctionReverse"
+          return "LbendVerticalReverse"
         }else if (resultList[0]===true && resultList[3]===true){
           return "LbendMirror"
         }else if (resultList[1]===true && resultList[3]===true){
@@ -200,6 +204,34 @@ export default {
       }
 
     },
+
+    changeNeighbor(rowIndex, colIndex) {
+      // 获取四个方向的格子索引
+      const neighbors = [
+        { row: rowIndex - 1, col: colIndex }, // 上
+        { row: rowIndex + 1, col: colIndex }, // 下
+        { row: rowIndex, col: colIndex - 1 }, // 左
+        { row: rowIndex, col: colIndex + 1 }, // 右
+      ];
+
+      neighbors.forEach((neighbor) => {
+        const { row, col } = neighbor;
+        // console.log(this.roadTypes.includes(this.map[row][col]))判断邻格有没有路
+        if (this.roadTypes.includes(this.map[row][col])) {
+          const style = this.changeStyle(row, col);
+          const cell = this.$el.querySelectorAll('.game-row')[row].children[col];
+          const roadImage = this.getRoadImage(style);
+          if (roadImage) {
+            cell.style.backgroundImage = `url(${roadImage})`;
+            cell.style.backgroundSize = 'cover';
+            console.log(cell.style);
+            console.log(cell.style.backgroundImage);
+          }
+
+        }
+      });
+    }
+
   },
 };
 
