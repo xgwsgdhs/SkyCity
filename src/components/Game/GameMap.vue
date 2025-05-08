@@ -64,7 +64,7 @@ export default {
   methods: {
     // 启动拖拽
     startDrag(rowIndex, colIndex) {
-      console.log(rowIndex,colIndex)
+      // console.log(rowIndex,colIndex)
       if (this.toolType === 'roadBuilder' && this.coins >= 50) {
         this.dragging = true;
         this.previewCells = [{ row: rowIndex, col: colIndex }];
@@ -121,13 +121,13 @@ export default {
         this.coins -= 50; // 每铺设一个格子，消耗50金币
       }
     },
-    // 获取对应的道路图片
+    // 获取对应的道路图片 传入图片名称即可
     getRoadImage(roadType) {
       return roads[roadType] || ''; // 返回对应道路类型的图片路径
     },
 
     // 改变点击格子上下左右相邻格子的颜色
-    changeNeighborColors(rowIndex, colIndex) {
+    changeNeighborColors(rowIndex, colIndex) {//传入当前格子位置即可
       // 获取四个方向的格子索引
       const neighbors = [
         { row: rowIndex - 1, col: colIndex }, // 上
@@ -135,28 +135,70 @@ export default {
         { row: rowIndex, col: colIndex - 1 }, // 左
         { row: rowIndex, col: colIndex + 1 }, // 右
       ];
+      let resultList = [];  // 定义一个空列表来存储结果
+      // [{…}, {…}, {…}, {…}]
 
       // 临时改变颜色
       neighbors.forEach((neighbor) => {
         const { row, col } = neighbor;
         if (row >= 0 && row < 20 && col >= 0 && col < 15) {
-          // 找到有效的格子，改变颜色
-          const cell = this.$el.querySelectorAll('.game-row')[row].children[col];
-          cell.style.backgroundColor = 'yellow';
+          const have = this.roadTypes.includes(this.map[row][col])
+          resultList.push(have) //[左, 右, 上, 下, ]状态
+        }else {
+          resultList.push(false)
         }
       });
 
-      // 1秒后恢复原颜色
-      setTimeout(() => {
-        neighbors.forEach((neighbor) => {
-          const { row, col } = neighbor;
-          if (row >= 0 && row < 20 && col >= 0 && col < 15) {
-            // 恢复颜色
-            const cell = this.$el.querySelectorAll('.game-row')[row].children[col];
-            cell.style.backgroundColor = '#f0f0f0'; // 恢复原背景色
-          }
-        });
-      }, 1000);
+      console.log(resultList);
+
+      let trueCount = resultList.filter(value => value === true).length;
+
+      if (trueCount === 0) {//[左, 右, 上, 下, ]状态
+        return "end"
+      } else if (trueCount === 1) {//[左, 右, 上, 下, ]状态
+
+        if (resultList[0]===true){
+          return "leftEnd"
+        }else if (resultList[1]===true){
+          return "rightEnd"
+        }else if (resultList[2]===true){
+          return "bottomEnd"
+        }else if (resultList[3]===true){
+          return "topEnd"
+        }
+
+      }else if (trueCount === 2) {//[左, 右, 上, 下, ]状态
+
+        if (resultList[0]===true && resultList[1]===true){
+          return "horizontal"
+        }else if (resultList[1]===true && resultList[2]===true){
+          return "Lbend"
+        }else if (resultList[2]===true && resultList[3]===true){
+          return "vertical"
+        }else if (resultList[0]===true && resultList[2]===true){
+          return "TjunctionReverse"
+        }else if (resultList[0]===true && resultList[3]===true){
+          return "LbendMirror"
+        }else if (resultList[1]===true && resultList[3]===true){
+          return "LbendHorizontalReverse"
+        }
+
+
+      }else if (trueCount === 3) {//[左, 右, 上, 下, ]状态
+
+        if (resultList[0]===true && resultList[1]===true && resultList[2]===true){
+          return "TjunctionReverse"
+        }else if (resultList[1]===true && resultList[2]===true && resultList[3]===true){
+          return "TjunctionRight"
+        }else if (resultList[0]===true && resultList[1]===true && resultList[3]===true){
+          return "Tjunction"
+        }else if (resultList[0]===true && resultList[2]===true && resultList[2]===true){
+          return "TjunctionLeft"
+        }
+      }else if (trueCount === 4) {
+        return "cross"
+      }
+
     },
   },
 };
