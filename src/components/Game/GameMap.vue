@@ -41,7 +41,8 @@
 </template>
 
 <script>
-import { roads } from '@/assets/index.js';
+import {roads} from '@/assets/index.js';
+
 export default {
   data() {
     return {
@@ -218,16 +219,7 @@ export default {
         const { row, col } = neighbor;
         // console.log(this.roadTypes.includes(this.map[row][col]))判断邻格有没有路
         if (this.roadTypes.includes(this.map[row][col])) {
-          const style = this.changeStyle(row, col);
-          const cell = this.$el.querySelectorAll('.game-row')[row].children[col];
-          const roadImage = this.getRoadImage(style);
-          if (roadImage) {
-            cell.style.backgroundImage = `url(${roadImage})`;
-            cell.style.backgroundSize = 'cover';
-            console.log(cell.style);
-            console.log(cell.style.backgroundImage);
-          }
-
+          this.map[row][col] = this.changeStyle(row, col);
         }
       });
     }
