@@ -44,6 +44,12 @@
 import {roads} from '@/assets/index.js';
 
 export default {
+  props: {
+    currentTool: {
+      type: String,
+      default: 'none'
+    }
+  },
   data() {
     return {
       // 初始化一个20行15列的二维数组
@@ -51,7 +57,6 @@ export default {
       coins: 3000, // 初始金币数
       timer: 100,  // 初始时间
       dragging: false, // 判断是否在拖拽
-      toolType: 'roadBuilder', // 当前使用的工具
       draggingPreview: false, // 判断是否正在拖动铺设预览
       previewCells: [], // 存储正在拖拽的路径格子
       roadTypes: [
@@ -61,6 +66,11 @@ export default {
         'TjunctionReverse', 'TjunctionRight', 'topEnd', 'vertical'
       ],
     };
+  },
+  computed: {
+    toolType() {
+      return this.currentTool;
+    }
   },
   methods: {
     // 启动拖拽
