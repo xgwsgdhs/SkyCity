@@ -11,7 +11,6 @@
             v-for="(cell, colIndex) in row"
             :key="'cell-' + colIndex"
             class="game-cell"
-            @click="changeStyle(rowIndex, colIndex)"
             @mousedown="startDrag(rowIndex, colIndex)"
             @mouseup="stopDrag"
             @mouseenter="dragMove(rowIndex, colIndex)"
