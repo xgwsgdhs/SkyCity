@@ -36,6 +36,9 @@
       <div class="timer">
         <span>时间：{{ timer }}</span>
       </div>
+      <div class="scores">
+        <span>分数：{{ scores }}</span>
+      </div>
     </div>
   </div>
 </template>
@@ -56,6 +59,7 @@ export default {
       map: Array.from({ length: 20 }, () => Array(15).fill(null)),
       coins: 3000, // 初始金币数
       timer: 100,  // 初始时间
+      scores: 0,
       dragging: false, // 判断是否在拖拽
       draggingPreview: false, // 判断是否正在拖动铺设预览
       previewCells: [], // 存储正在拖拽的路径格子
@@ -269,6 +273,7 @@ export default {
   width: 100%;
 }
 
+.scores,
 .coins,
 .timer {
   font-size: 18px;
