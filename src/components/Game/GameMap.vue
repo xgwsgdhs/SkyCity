@@ -75,7 +75,7 @@ export default {
   methods: {
     // 启动拖拽
     startDrag(rowIndex, colIndex) {
-      // console.log(rowIndex,colIndex)
+      console.log(this.toolType)
       if (this.toolType === 'roadBuilder' && this.coins >= 50) {
         this.dragging = true;
         this.previewCells = [{ row: rowIndex, col: colIndex }];
